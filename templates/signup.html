@@ -1,0 +1,17 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block page_title %}
+<div class="d-flex gap-3 align-items-center">
+    <h1>Registration</h1>
+</div>
+{% endblock page_title %}
+
+{% block content %}
+<div class="d-flex flex-column gap-3">
+    {% include "layouts/signup_fields.html" %}
+</div>
+{% endblock content %}
+    
+
+

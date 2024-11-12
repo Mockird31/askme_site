@@ -1,0 +1,39 @@
+{% load static %}
+<div class="card w-100" style="width: 18rem;">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-3">
+                <div class="border mb-2" style="height: 100px">
+                    <img src="{% static  "img/common_member.png" %}" alt="Avatar" class="img-fluid"
+                        style="height: 100px; margin-left: 53px; margin-right: 43px;">
+                </div>
+                <div>{{ question.profile.user.username }}</div>
+                <div class="d-flex gap-3 mt-3">
+                    <button type="button" class="btn btn-outline-success d-flex align-items-center like-button" data-count="{{ answer.like_count }}">
+                        <span class="me-1">👍</span>
+                        <span class="badge bg-success ms-2">{{ question.like_count }}</span>
+                    </button>
+                    <button type="button" class="btn btn-outline-danger d-flex align-items-center dislike-button"
+                        style="margin-left: 32px;" data-count="{{ answer.dislike_count }}">
+                        <span class="me-1">👎</span>
+                        <span class="badge bg-danger ms-2">{{ question.dislike_count }}</span>
+                    </button>
+                </div> 
+            </div>
+            <div class="col-9">
+                <h5 class="card-title">{{ question.title }}</h5>
+                <p class="card-text">{{ question.text }}</p>
+                <div class="d-flex gap-5">
+                    <a href="{% url 'question' question_id=question.id %}" class="card-link">Answers</a>
+                    <div>
+                        Tags:
+                        {% for tag in question.tags.all %}
+                            <a href="{% url 'tag_page' tag_name=tag.tag_name %}" class="card-link">{{ tag.tag_name }}</a>
+                        {% endfor %}
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
