@@ -1,7 +1,6 @@
-
-
 {% extends "layouts/base.html" %}
 {% load static %}
+{% load bootstrap5 %}
 {% block page_title %}
 <div class="d-flex gap-3 align-items-center">
     <h1>New question:</h1>
@@ -10,29 +9,24 @@
 
 {% block content %}
 <div class="d-flex flex-column gap-3">
-                    
-    <div class="d-flex align-items-start mt-3 me-5">
-        <span class="text-danger">Too much tags</span>
-    </div>
+    <form action="{% url "ask" %}" method="POST">
 
-    <div class="d-flex align-items-start mt-3 me-5">
-        <label for="questionText" class="me-5">Title:</label>
-        <input type="text" class="form-control w-75" id="questionText" placeholder="Enter title here" maxlength="50">
-    </div>
-
-    <div class="d-flex align-items-start mt-3 me-5">
-        <label for="questionText" class="me-5">Text:</label>
-        <textarea class="form-control w-75" id="questionText" rows="11" placeholder="Enter your question here" style="resize: none;" maxlength="500"></textarea>
-    </div>
-
-    <div class="d-flex align-items-start mt-3 me-5" style="margin-left: -8px;">
-        <label for="tags" class="me-5">Tags:</label>
-        <input type="text" class="form-control w-75" id="tags" placeholder="Enter tags here">
-    </div>
-    
-    <div class="d-flex align-items-start mt-3 mb-5" style="margin-left: 85px;">
-        <button type="button" class="btn btn-outline-success d-flex align-items-center like-button">ASK!</button>
-    </div>
+        {% csrf_token %}
+        {% bootstrap_form form %}
+        {% if form.non_field_errors %}
+            <div class="error">
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        {% buttons %}
+            <div class="d-flex align-items-start mt-3 mb-5">
+                <button type="submit" class="btn btn-outline-success d-flex align-items-center like-button">ASK!</button>
+            </div>
+        {% endbuttons %}
+    </form>
     
 </div>
 {% endblock content %}
