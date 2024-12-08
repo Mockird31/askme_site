@@ -58,7 +58,8 @@ def question(request, question_id):
 
 def tag_page(request, tag_name):
     manager = models.Question.objects
-    tag_questions = app.utils.find_page_with_tag(manager.get_by_tag(tag_name.capitalize()), tag_name.capitalize())
+    tag_questions = app.utils.find_page_with_tag(manager.get_by_tag(tag_name.lower()), tag_name.lower())
+    print(tag_questions)
     popular_tags = models.Tag.objects.get_popular_tags()
     popular_members = models.Profile.objects.get_top_profiles()
     if tag_questions == []:

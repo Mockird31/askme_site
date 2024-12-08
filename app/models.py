@@ -39,7 +39,7 @@ class QuestionManager(models.Manager):
         ).order_by("-like_count", "-created_at")
     
     def get_by_tag(self, tag_name):
-        return self.filter(tags__tag_name=tag_name).annotate(
+        return self.filter(tags__tag_name__iexact=tag_name).annotate(
             like_count=Count('likes'),
             dislike_count=Count('questiondislike')
         )
