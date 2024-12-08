@@ -1,57 +1,23 @@
 {% load static %}
+{% load bootstrap5 %}
 
-<div class="d-flex align-items-start mt-3 me-5">
-    <span class="text-danger">Sorry, this email address already registred</span>
-</div>
-
-<div class="d-flex align-items-start mt-3 me-5">
-    <span class="text-danger">Sorry, this login is busy</span>
-</div>
-
-<div class="d-flex align-items-start mt-3 me-5">
-    <span class="text-danger">Wrong password</span>
-</div>
-
-<div class="d-flex align-items-start mt-3 me-5">
-    <span class="text-danger">Passwords are different</span>
-</div>
-
-<div class="d-flex align-items-start mt-3 me-5">
-    <label for="questionText" class="me-5">Login:</label>
-    <input type="text" class="form-control" style="margin-left: 80px; width: 490px;" id="questionText" placeholder="Enter login here" style="margin-left: 83px;">
-</div>
-
-<div class="d-flex align-items-start mt-3 me-5">
-    <label for="questionText" class="me-5">Email:</label>
-    <input type="text" class="form-control" style="margin-left: 80px; width: 490px;" placeholder="Enter your email here" style="resize: none; margin-left: 83px;">
-</div>
-
-<div class="d-flex align-items-start mt-3" style="margin-left: -5px;">
-    <label for="tags" class="me-5">Nickname:</label>
-    <input type="text" class="form-control w-50" id="tags" placeholder="Enter your nickname here" style="margin-left: 53px;">
-</div>
-
-<div class="d-flex align-items-start mt-3" style="margin-left: -5px;">
-    <label for="tags" class="me-5">Password:</label>
-    <input type="password" class="form-control w-50" id="tags" placeholder="Enter your password here" style="margin-left: 53px;">
-</div>
-
-<div class="d-flex align-items-start mt-3" style="margin-left: -5px;">
-    <label for="tags" class="me-5">Repeat password:</label>
-    <input type="password" class="form-control w-50" id="tags" placeholder="Please, repeat your password here">
-</div>
-
-<div class="d-flex align-items-start mt-3">
-    <label for="tags" class="me-5">Upload avatar:</label>
-    <form action="/upload" method="post" enctype="multipart/form-data" style="margin-left: 20px">
-        <input type="file" name="file" accept=".jpg,.png">
-    </form>
-</div>
-
-
-<div class="d-flex align-items-start mt-3">
-    <button type="button" class="btn btn-outline-success d-flex align-items-center like-button">Register!</button>
-</div>
+<form action = "{% url "signup" %}" method = "POST">
+    {% csrf_token %}
+    {% bootstrap_form form %}
+    {% if form.non_field_errors %}
+        <div class="error">
+            {% for error in form.non_field_errors %}
+                <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    {% buttons %}
+        <div class="d-flex align-items-start mt-3">
+            <button type="submit" class="btn btn-outline-success d-flex align-items-center like-button">Register!</button>
+        </div>
+    {% endbuttons %}
+</form>
 
 <div class="d-flex align-items-start mt-3 mb-5">
     <a href="{% url "login" %}">If you're alredy registred, click here</a>

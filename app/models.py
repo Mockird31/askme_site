@@ -50,6 +50,8 @@ class QuestionManager(models.Manager):
 class ProfileManager(models.Manager):
     def get_top_profiles(self):
         return self.annotate(answer_count=Count('answer')).order_by('-answer_count')[:5]
+    def get_profile_by_user(self, username):
+        return self.get(user__username=username)  
 
 class TagManager(models.Manager):
     def get_popular_tags(self):

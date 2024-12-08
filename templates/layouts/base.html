@@ -26,13 +26,17 @@
           </form>
 
           <div class="d-flex gap-1 me-3">
-            <img src="{% static 'img/common_member.png' %}" alt="Avatar" class="img-fluid" style="height: 50px;" />
-            <div>
-              <div>Member</div>
+            {% if request.user.is_authenticated %}
+              <img src="{% static 'img/common_member.png' %}" alt="Avatar" class="img-fluid" style="height: 50px;" />
+              <div>
+                <div>{{ request.user.username }}</div>
+                <a href="{% url "settings" %}">Settings</a>
+                <a href="{% url "logout" %}">Log out</a>
+              </div>
+            {% else %}
               <a href="{% url "login" %}">Log in</a>
-              <a href="{% url "settings" %}">Settings</a>
-              <a href="#">Log out</a>
-            </div>
+              <a href="{% url "signup" %}">Register</a>
+            {% endif %}
           </div>
         </div>
       </div>
