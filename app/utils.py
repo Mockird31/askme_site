@@ -21,7 +21,9 @@ def find_page_with_tag(QUESTIONS, tag_name):
     tag_questions = []
     for question in QUESTIONS:
         for tag in question.tags.all():
-            if tag_name == tag.tag_name:
+            if tag_name.lower() == tag.tag_name.lower():
+                print(tag_name)
+                print(tag.tag_name.lower())
                 tag_questions.append(question)
 
     if len(tag_questions) == 0:
@@ -63,9 +65,10 @@ def my_authenticate(request, popular_tags, popular_members):
 
 
 def create_profile(request, popular_tags, popular_members):
-    form = RegisterForm(request.POST)
+    form = RegisterForm(request.POST, request.FILES)
     if form.is_valid():
-        form.save()
+        profile = form.save()
+        auth.login(request, profile.user)
         return redirect('index')
     return render(
             request,
