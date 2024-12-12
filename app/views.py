@@ -1,4 +1,5 @@
-from django.http import HttpResponse
+import json
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib import auth 
 from django.contrib.auth.decorators import login_required
@@ -6,6 +7,7 @@ import app.utils
 from app import models
 from app.forms import LoginForm, RegisterForm, QuestionForm, AnswerForm, SettingsForm
 import copy
+from django.views.decorators.http import require_POST
 
 QUESTIONS = [
     {
@@ -53,13 +55,13 @@ def question(request, question_id):
     return render(
         request,
         'question.html',
-        {'question': one_question, 'answers': page.object_list, 'page_obj': page, 'popular_tags': popular_tags, 'popular_members': popular_members, 'form': AnswerForm()}
+        {'question': one_question, 'answers': page.object_list, 'page_obj': page, 
+            'popular_tags': popular_tags, 'popular_members': popular_members, 'form': AnswerForm()}
     )
 
 def tag_page(request, tag_name):
     manager = models.Question.objects
     tag_questions = app.utils.find_page_with_tag(manager.get_by_tag(tag_name.lower()), tag_name.lower())
-    print(tag_questions)
     popular_tags = models.Tag.objects.get_popular_tags()
     popular_members = models.Profile.objects.get_top_profiles()
     if tag_questions == []:
@@ -131,3 +133,37 @@ def signup(request):
 def logout(request):
     auth.logout(request)
     return redirect('index')
+
+@require_POST 
+@login_required
+def like_question_async(request, question_id):
+    data = app.utils.get_like_async_info_question(request, question_id)
+    return JsonResponse(data)
+
+@require_POST 
+@login_required
+def dislike_question_async(request, question_id):
+    data = app.utils.get_dislike_async_info_question(request, question_id)
+    return JsonResponse(data)
+
+@require_POST
+@login_required
+def pick_correct_answer(request, answer_id):
+    data = app.utils.get_correct_answer_info(request, answer_id)
+    return JsonResponse(data)  
+
+
+@require_POST 
+@login_required
+def like_answer_async(request, answer_id):
+    data = app.utils.get_like_async_info_answer(request, answer_id)
+    return JsonResponse(data)
+
+@require_POST 
+@login_required
+def dislike_answer_async(request, answer_id):
+    data = app.utils.get_dislike_async_info_answer(request, answer_id)
+    return JsonResponse(data)
+
+
+    

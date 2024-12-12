@@ -4,6 +4,8 @@ from app import models
 from django.contrib import auth
 from django.contrib import messages
 from app.forms import LoginForm, RegisterForm, QuestionForm, AnswerForm, SettingsForm
+from django.core.exceptions import ObjectDoesNotExist
+from django import forms
 
 
 def paginate(object_list, request, per_page=10):
@@ -22,8 +24,6 @@ def find_page_with_tag(QUESTIONS, tag_name):
     for question in QUESTIONS:
         for tag in question.tags.all():
             if tag_name.lower() == tag.tag_name.lower():
-                print(tag_name)
-                print(tag.tag_name.lower())
                 tag_questions.append(question)
 
     if len(tag_questions) == 0:
@@ -35,7 +35,6 @@ def find_page_with_tag(QUESTIONS, tag_name):
 def my_authenticate(request, popular_tags, popular_members):
     form = LoginForm(request.POST)
     if not form.is_valid():
-        print(form.errors)
         return render(
             request,
             "login.html",
@@ -82,6 +81,17 @@ def create_profile(request, popular_tags, popular_members):
 
 
 def create_question(request, popular_tags, popular_members):
+    if (not models.Profile.objects.filter(user__username=request.user).exists()):
+        messages.error(request, 'This profile does not exist')
+        return render(
+            request,
+            "ask.html",
+            {
+                'form': QuestionForm(),
+                'popular_tags': popular_tags,
+                'popular_members': popular_members,
+            }
+        )
     profile = models.Profile.objects.get(user__username=request.user)
     form = QuestionForm(request.POST)
     if form.is_valid():
@@ -114,7 +124,7 @@ def create_answer(request, question_id):
 
 def change_settings(request, popular_tags, popular_members):
     profile = models.Profile.objects.get(user__username=request.user)
-    form = SettingsForm(request.POST, instance=profile, user=request.user)
+    form = SettingsForm(request.POST, request.FILES, instance=profile, user=request.user)
     if form.is_valid():
         form.save()
         messages.success(request, 'Settings changed successfully')
@@ -124,3 +134,101 @@ def change_settings(request, popular_tags, popular_members):
         {'popular_tags': popular_tags, 'popular_members': popular_members, 'form': form}
     )
     
+def check_is_liked_question(question: models.Question, user: models.User):
+    has_liked = False
+    if user.is_authenticated:
+        profile = models.Profile.objects.get(user=user)
+        has_liked = models.QuestionLike.objects.filter(question=question, profile=profile).exists()
+    return has_liked
+
+def check_is_disliked_question(question: models.Question, user: models.User):
+    has_disliked = False
+    if user.is_authenticated:
+        profile = models.Profile.objects.get(user=user)
+        has_disliked = models.QuestionDislike.objects.filter(question=question, profile=profile).exists()
+    return has_disliked
+
+def get_like_async_info_question(request, question_id: int) -> dict:
+    profile = models.Profile.objects.get(user=request.user)
+    question = models.Question.objects.get(id=question_id)
+
+    models.QuestionDislike.objects.filter(question=question, profile=profile).delete()
+
+    like, created = models.QuestionLike.objects.get_or_create(question=question, profile=profile)
+    if not created:
+        like.delete()
+
+    likes_count = models.QuestionLike.objects.filter(question=question).count()
+    dislikes_count = models.QuestionDislike.objects.filter(question=question).count()
+
+    return {
+        'likes_count': likes_count,
+        'dislikes_count': dislikes_count,
+    }
+
+def get_dislike_async_info_question(request, question_id: int) -> dict:
+    profile = models.Profile.objects.get(user=request.user)
+    question = models.Question.objects.get(id=question_id)
+
+    models.QuestionLike.objects.filter(question=question, profile=profile).delete()
+
+    dislike, created = models.QuestionDislike.objects.get_or_create(question=question, profile=profile)
+    if not created:
+        dislike.delete()
+
+    likes_count = models.QuestionLike.objects.filter(question=question).count()
+    dislikes_count = models.QuestionDislike.objects.filter(question=question).count()
+
+    return {
+        'likes_count': likes_count,
+        'dislikes_count': dislikes_count,
+    }
+
+def get_correct_answer_info(request, answer_id):
+    profile = models.Profile.objects.get(user=request.user)
+    answer = models.Answer.objects.get(id=answer_id)
+    question = answer.question
+    if (profile != question.profile):
+        return {'status': 'error', 'message': 'You are not allowed to pick correct answer for this question'}
+    if (answer.is_correct == 'c'):
+        answer.is_correct = 'p'
+    else:
+        answer.is_correct = 'c' 
+    answer.save()  
+    return {'status': 'ok', 'is_correct': answer.is_correct}
+
+
+
+def get_like_async_info_answer(request, answer_id: int) -> dict:
+    profile = models.Profile.objects.get(user=request.user)
+    answer = models.Answer.objects.get(id=answer_id)
+    models.AnswerDislike.objects.filter(answer=answer, profile=profile).delete()
+
+    like, created = models.AnswerLike.objects.get_or_create(answer=answer, profile=profile)
+    if not created:
+        like.delete()
+
+    likes_count = models.AnswerLike.objects.filter(answer=answer).count()
+    dislikes_count = models.AnswerDislike.objects.filter(answer=answer).count()
+
+    return {
+        'likes_count': likes_count,
+        'dislikes_count': dislikes_count,
+    }
+
+def get_dislike_async_info_answer(request, answer_id: int) -> dict:
+    profile = models.Profile.objects.get(user=request.user)
+    answer = models.Answer.objects.get(id=answer_id)
+    models.AnswerLike.objects.filter(answer=answer, profile=profile).delete()
+
+    dislike, created = models.AnswerDislike.objects.get_or_create(answer=answer, profile=profile)
+    if not created:
+        dislike.delete()
+
+    likes_count = models.AnswerLike.objects.filter(answer=answer).count()
+    dislikes_count = models.AnswerDislike.objects.filter(answer=answer).count()
+
+    return {
+        'likes_count': likes_count,
+        'dislikes_count': dislikes_count,
+    }

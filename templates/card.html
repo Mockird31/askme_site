@@ -1,23 +1,32 @@
 {% load static %}
-<div class="card w-100" style="width: 18rem;">
+<div class="card w-100" style="width: 18rem;" data-question-id="{{ question.id }}">
     <div class="card-body">
         <div class="row">
             <div class="col-3">
                 <div class="border mb-2" style="height: 100px">
-                    <img src="{% static  "img/common_member.png" %}" alt="Avatar" class="img-fluid"
-                        style="height: 100px; margin-left: 53px; margin-right: 43px;">
+                    {% if question.profile.image_path %}
+                        <img src="{{ question.profile.image_path.url }}" alt="Avatar" class="img-fluid"
+                            style="height: 100px; margin-left: 53px; margin-right: 43px;">
+                    {% else %}
+                        <img src="{% static 'img/common_member.png' %}" alt="Avatar" class="img-fluid"
+                            style="height: 100px; margin-left: 53px; margin-right: 43px;">
+                    {% endif %}
                 </div>
                 <div>{{ question.profile.user.username }}</div>
                 <div class="d-flex gap-3 mt-3">
-                    <button type="button" class="btn btn-outline-success d-flex align-items-center like-button" data-count="{{ answer.like_count }}">
+                    
+                    <button type="submit" class="btn btn-success d-flex align-items-center like-button-question">
                         <span class="me-1">👍</span>
-                        <span class="badge bg-success ms-2">{{ question.like_count }}</span>
+                        <span class="badge bg-success ms-2 like-counter-question">{{ question.like_count }}</span>
                     </button>
-                    <button type="button" class="btn btn-outline-danger d-flex align-items-center dislike-button"
-                        style="margin-left: 32px;" data-count="{{ answer.dislike_count }}">
+                    
+
+                    <button type="submit" class="btn btn-danger d-flex align-items-center dislike-button-question"
+                        style="margin-left: 32px;">
                         <span class="me-1">👎</span>
-                        <span class="badge bg-danger ms-2">{{ question.dislike_count }}</span>
+                        <span class="badge bg-danger ms-2 dislike-counter-question">{{ question.dislike_count }}</span>
                     </button>
+                    
                 </div> 
             </div>
             <div class="col-9">

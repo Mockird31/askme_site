@@ -1,6 +1,6 @@
 {% load static %}
 
-<div class="card w-100" style="width: 18rem;">
+<div class="card w-100 ans" style="width: 18rem;" data-answer-id="{{ answer.id }}">
     <div class="card-body">
         <div class="row">
             <div class="col-3">
@@ -8,13 +8,13 @@
                     <img src="{% static "img/common_member.png" %}" alt="Avatar" class="img-fluid" style="height: 100px; margin-left: 53px; margin-right: 43px;">
                 </div>
                 <div class="d-flex gap-3 mt-3">
-                    <button type="button" class="btn btn-outline-success d-flex align-items-center like-button" data-count="{{ answer.like_count }}">
+                    <button type="submit" class="btn btn-success d-flex align-items-center like-button-answer">
                         <span class="me-1">👍</span>
-                        <span class="badge bg-success ms-2">{{ answer.like_count }}</span>
+                        <span class="badge bg-success ms-2 like-counter-answer">{{ answer.like_count }}</span>
                     </button>
-                    <button type="button" class="btn btn-outline-danger d-flex align-items-center dislike-button" style="margin-left: 30px;" data-count="{{ answer.dislike_count }}">
+                    <button type="submit" class="btn btn-danger d-flex align-items-center dislike-button-answer" style="margin-left: 30px;">
                         <span class="me-1">👎</span>
-                        <span class="badge bg-danger ms-2">{{ answer.dislike_count }}</span>
+                        <span class="badge bg-danger ms-2 dislike-counter-answer">{{ answer.dislike_count }}</span>
                     </button>
                 </div>
 
@@ -24,16 +24,20 @@
                 <p class="card-text"> {{ answer.text }} </p>
 
                 <div class="form-check mt-5">
-                    {% if answer.is_correct == 'c' %}
-                    <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" checked>
-                    <label class="form-check-label" for="flexCheckDefault">
-                        Correct!    
-                    </label>
-                    {% elif answer.is_correct == 'p' %}
-                    <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-                    <label class="form-check-label" for="flexCheckDefault">
-                        Correct!    
-                    </label>
+                    {% if question.profile.user == request.user %}
+
+                        {% if answer.is_correct == 'c' %}
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" checked>
+                            <label class="form-check-label" for="flexCheckDefault">
+                                Correct!    
+                            </label>
+                        {% else %}
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+                            <label class="form-check-label" for="flexCheckDefault">
+                                Correct!    
+                            </label>
+                        {% endif %}
+
                     {% endif %}
                 </div>
             </div>
