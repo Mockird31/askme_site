@@ -27,7 +27,11 @@
 
           <div class="d-flex gap-1 me-3">
             {% if request.user.is_authenticated %}
-              <img src="{% static 'img/common_member.png' %}" alt="Avatar" class="img-fluid" style="height: 50px;" />
+              {% if request.user.profile.image_path %}
+                <img src="{{ request.user.profile.image_path.url }}" alt="Avatar" class="img-fluid" style="height: 50px;" />
+              {% else %}
+                <img src="{% static 'img/common_member.png' %}" alt="Avatar" class="img-fluid" style="height: 50px;" />
+              {% endif %}
               <div>
                 <div>{{ request.user.username }}</div>
                 <a href="{% url "settings" %}">Settings</a>
@@ -75,7 +79,9 @@
         </div>
       </div>
     </main>
-    <script src="../static/js/like_dislike_handler.js"></script>
+    <script src = "{% static 'js/app.js' %}"></script>
+    <script src="{% static 'js/pick_correct_answer.js' %}"></script>
+    <script src="{% static 'js/answer_likes_dislikes.js' %}"></script>
     <script src="../static/js/bootstrap.min.js"></script>
   </body>
 </html>

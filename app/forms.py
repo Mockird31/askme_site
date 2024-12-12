@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from app.models import Profile, Question, Tag, Answer
+from app import models
 
 class LoginForm(forms.Form):
     username = forms.CharField(min_length=2, widget=forms.TextInput(attrs={
@@ -20,7 +20,7 @@ class LoginForm(forms.Form):
 
 class RegisterForm(forms.ModelForm):
     class Meta:
-        model = Profile
+        model = models.Profile
         fields = ('image_path', )
     image_path = forms.ImageField(required=False, widget=forms.FileInput(attrs={
         'class': 'form-control w-50',
@@ -86,7 +86,7 @@ class QuestionForm(forms.ModelForm):
         help_text="Enter tags separated by commas, e.g., 'python, django, api'."
     )
     class Meta:
-        model = Question
+        model = models.Question
         fields = ('title', 'text')  
         widgets = {
             'title': forms.TextInput(attrs={
@@ -102,6 +102,16 @@ class QuestionForm(forms.ModelForm):
             }),
         }
     
+    def clean_tags(self):
+        tags_input = self.cleaned_data['tags']
+        tags_list = [tag.strip() for tag in tags_input.split(',') if tag.strip()]
+        invalid_tags = [tag for tag in tags_list if not tag.isalnum()]
+
+        if invalid_tags:
+            raise forms.ValidationError(f"Invalid tags: {', '.join(invalid_tags)}")
+
+        return tags_input
+    
     def save(self, profile, commit=True):
         question = super().save(commit=False)  
         question.profile = profile  
@@ -110,9 +120,9 @@ class QuestionForm(forms.ModelForm):
 
             tags_input = self.cleaned_data['tags']
             tags_list = [tag.strip() for tag in tags_input.split(',') if tag.strip()]
-
+            print(tags_list)
             for tag_name in tags_list:
-                tag, created = Tag.objects.get_or_create(tag_name=tag_name)
+                tag, created = models.Tag.objects.get_or_create(tag_name=tag_name)
                 question.tags.add(tag)
             
             self.save_m2m()
@@ -121,7 +131,7 @@ class QuestionForm(forms.ModelForm):
 
 class AnswerForm(forms.ModelForm):
     class Meta:
-        model = Answer
+        model = models.Answer
         fields = ('text', )
         widgets = {
             'text': forms.Textarea(attrs={
@@ -143,7 +153,7 @@ class AnswerForm(forms.ModelForm):
 
 class SettingsForm(forms.ModelForm):
     class Meta:
-        model = Profile
+        model = models.Profile
         fields = ('image_path',)
         widgets = {
             'image_path':forms.ClearableFileInput(attrs={
@@ -171,6 +181,8 @@ class SettingsForm(forms.ModelForm):
     
     def clean_username(self):
         username = self.cleaned_data.get('username')
+        if (models.Profile.objects.filter(user__username=username).exists()):
+            raise forms.ValidationError("Profile with this username already exists")
         if not username:
             raise forms.ValidationError("Имя пользователя не может быть пустым.")
         return username
