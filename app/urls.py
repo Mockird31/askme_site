@@ -1,6 +1,7 @@
 from django.urls import include, path
 from app import views
 from django.contrib import admin
+from askme_inyakin import settings
 
 urlpatterns = [
     path('', views.index, name='index'),
@@ -20,3 +21,6 @@ urlpatterns = [
     path("<int:answer_id>/like_answer_async", views.like_answer_async, name='like_answer_async'),
     path("<int:answer_id>/dislike_answer_async", views.dislike_answer_async, name='dislike_answer_async'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += [path("test/", views.test_view, name='test_view')]

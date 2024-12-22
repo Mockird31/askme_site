@@ -164,3 +164,4 @@ cython_debug/
 .DS_Store
 project_env/
 uploads/
+nginx_cache/

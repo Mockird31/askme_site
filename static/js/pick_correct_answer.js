@@ -1,19 +1,3 @@
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            // Проверяем, начинается ли эта строка с нужного нам имени
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
 const answers = document.getElementsByClassName('card w-100 ans');
 for (const answer of answers) {
     const correctButton = answer.querySelector('.form-check-input');
