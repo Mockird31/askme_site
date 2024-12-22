@@ -33,7 +33,6 @@ def index(request):
         context={'questions': page.object_list, 'page_obj': page, 'popular_tags': popular_tags, 'popular_members': popular_members}
     )
 
-
 def hot(request):
     questions = models.Question.objects.get_hot_questions()
     page = app.utils.paginate(questions, request, 5)
@@ -165,5 +164,8 @@ def dislike_answer_async(request, answer_id):
     data = app.utils.get_dislike_async_info_answer(request, answer_id)
     return JsonResponse(data)
 
-
-    
+def test_view(request):
+    return render(
+        request,
+        "test.html"
+    )
