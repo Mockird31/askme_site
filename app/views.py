@@ -3,14 +3,16 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib import auth 
 from django.contrib.auth.decorators import login_required
+from django.contrib.postgres.search import SearchRank
 import app.utils 
 from app import models
 from app.forms import LoginForm, RegisterForm, QuestionForm, AnswerForm, SettingsForm
+from django.db.models import Count, Sum
 import copy
 from django.views.decorators.http import require_POST, require_GET
 import functools
 import operator
-from django.db.models import Q
+from django.db.models import Q, F
 
 QUESTIONS = [
     {
@@ -29,18 +31,53 @@ def search(request):
     query = request.GET.get('q')
     if not query:
         return redirect('index')
+    if len(query) < 3:
+        return render(
+            request,
+            'search_result.html',
+            {'questions': [], 'page_obj': None}
+        )
     queries = query.split()
-    query_set = functools.reduce(operator.__or__, [Q(search_vector__icontains=query) for query in queries])
-    matched_questions = models.Question.objects.filter(query_set).distinct()
-    print(matched_questions)
-    page = app.utils.paginate(matched_questions, request, 5)
-
+    query_set = functools.reduce(operator.__or__, [Q(search_vector__icontains=q) for q in queries])
+    matched_questions = models.Question.objects.filter(query_set).annotate(
+        like_count=Count('likes'),
+        dislike_count=Count('questiondislike')
+    ).distinct().order_by('-created_at')
+    
+    page_obj = app.utils.paginate(matched_questions, request, 5)
     return render(
         request,
         'search_result.html',
-        context={'questions': page.object_list, 'page_obj': page}
+        {'questions': page_obj.object_list, 'page_obj': page_obj}
     )
 
+@require_GET
+def search_hints(request):
+    query = request.GET.get('q')
+    if not query:
+        return JsonResponse({'error': 'Query can not be empty!'}, status=422)
+
+    queries = query.split()
+    query_set = functools.reduce(operator.__or__, [Q(search_vector__icontains=query) for query in queries])
+    matched_questions = models.Question.objects.filter(query_set).distinct()[:5]
+
+    hints = set()
+    for question in matched_questions:
+        if query in question.title:
+            content = question.title
+        else:
+            content = question.text
+
+        match_start = content.find(queries[0])
+        match_idx = match_start
+        query_idx = 0
+        while (query_idx < len(query) and query[query_idx] == content[match_idx]) \
+                or (match_idx < len(content) and content[match_idx].isalpha()):
+            match_idx += 1
+            query_idx += 1
+        else:
+            hints.add(content[match_start:match_idx])
+    return JsonResponse(sorted(filter(len, hints), key=len, reverse=True), safe=False)
 
 def index(request):
     questions = models.Question.objects.get_questions_with_counts()

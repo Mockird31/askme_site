@@ -17,11 +17,13 @@
 
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
 
-          <form class="d-flex flex-grow-1 ms-5" role="search" action="{% url 'search' %}" method="GET">
-              <div class="input-group">
-                <input name="q" class="form-control" type="search" placeholder="Search" aria-label="Search" />
-                <button class="btn btn-outline-secondary" type="submit"><i class="fas fa-search"></i></button>
-              </div>
+          <form class="d-flex flex-grow-1 ms-5 position-relative" role="search" action="{% url 'search' %}" method="GET">
+            <div class="input-group">
+              <input name="q" id="search-input" class="form-control" type="search" placeholder="Search" aria-label="Search" />
+              <button class="btn btn-outline-secondary" type="submit"><i class="fas fa-search"></i></button>
+            </div>
+            <!-- Контейнер для подсказок -->
+            <ul id="hints-container" class="dropdown-menu w-100 position-absolute mt-5" style="display: none"></ul>
             <a href="{% url "ask" %}" class="btn btn-outline-success ms-5 me-5 w-50" role="button">Ask question</a>
           </form>
 
@@ -80,6 +82,8 @@
       </div>
     </main>
     <script src = "{% static 'js/app.js' %}"></script>
-    <script src="../static/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+    <script src = "{% static 'js/search_hints.js' %}"></script>
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
   </body>
 </html>

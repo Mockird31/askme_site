@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import Count, Sum
 from django.contrib.postgres.indexes import GinIndex
-from django.contrib.postgres.search import SearchVectorField
+from django.contrib.postgres.search import SearchVectorField, SearchVector
 
 from datetime import timedelta
 from django.utils.timezone import now
@@ -111,15 +111,26 @@ class Question(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
 
+    search_vector = SearchVectorField(null=True)
+
     objects = QuestionManager()
 
-    search_vector = SearchVectorField(null=True)
+    def __str__(self):
+        return self.title
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        
+        self.search_vector = (
+            SearchVector('title', weight='A') +
+            SearchVector('text', weight='B')
+        )
+        Question.objects.filter(id=self.id).update(search_vector=self.search_vector)
+
     class Meta:
         indexes = [
             GinIndex(fields=['search_vector']),
         ]
-    def __str__(self):
-        return self.title
 
 class Answer(models.Model):
     ANSWER_CHOICES = [
@@ -165,64 +176,4 @@ class AnswerDislike(models.Model):
 
     class Meta:
         unique_together = ('answer', 'profile')  
-
-
-# Table users{
-#   username varchar
-#   email varchar
-#   password varchar
-#   id int [pk, increment]
-#   created_at datetime 
-#   updated_at datetime
-# }
-
-# Table question_tags {
-#   question_id int 
-#   tag_id int
-# }
-
-# Table likes_questions {
-#   question_id int 
-#   profile_id int
-# }
-
-# Table likes_answers {
-#   answer_id int
-#   profile_id int
-# }
-
-# Table dislikes_questions {
-#   question_id int
-#   profile_id int 
-# }
-
-# Table dislike_answers {
-#   answer_id int
-#   profile_id int
-# }
-
-# Ref: questions.profile_id > profiles.id
-# Ref: profiles.user_id > users.id
-# Ref: answers.question_id > questions.id
-
-# Ref: "tags"."id" < "question_tags"."tag_id"
-
-# Ref: "questions"."id" < "question_tags"."question_id"
-
-# Ref: "profiles"."id" < "likes_questions"."profile_id"
-
-# Ref: "likes_questions"."question_id" < "questions"."id"
-
-# Ref: "profiles"."id" < "dislikes_questions"."profile_id"
-
-# Ref: "dislikes_questions"."question_id" < "questions"."id"
-
-# Ref: "profiles"."id" < "dislike_answers"."profile_id"
-
-# Ref: "dislike_answers"."answer_id" < "answers"."id"
-
-# Ref: "profiles"."id" < "likes_answers"."profile_id"
-
-# Ref: "likes_answers"."answer_id" < "answers"."id"
-
 

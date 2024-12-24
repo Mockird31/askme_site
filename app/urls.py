@@ -21,6 +21,7 @@ urlpatterns = [
     path("<int:answer_id>/like_answer_async", views.like_answer_async, name='like_answer_async'),
     path("<int:answer_id>/dislike_answer_async", views.dislike_answer_async, name='dislike_answer_async'),
     path("search", views.search, name='search'),
+    path('search/hints/', views.search_hints, name='search_hints'),
 ]
 
 if settings.DEBUG:

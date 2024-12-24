@@ -17,7 +17,11 @@
                     
                     <button type="submit" class="btn btn-success d-flex align-items-center like-button-question">
                         <span class="me-1">👍</span>
-                        <span class="badge bg-success ms-2 like-counter-question">{{ question.like_count }}</span>
+                        {% if question.like_count == None%}
+                            <span class="badge bg-success ms-2 like-counter-question">0</span>
+                        {% else %}
+                            <span class="badge bg-success ms-2 like-counter-question">{{ question.like_count }}</span>
+                        {% endif %}
                     </button>
                     
 
