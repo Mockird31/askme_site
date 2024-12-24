@@ -16,7 +16,7 @@ function getCookie(name) {
 }
 
 const answers_likes = document.getElementsByClassName('card w-100 ans');
-console.log({answers});
+
 for (const answer of answers_likes) {
     const likeButton_answer = answer.querySelector('.like-button-answer');
     const likeCounter_answer = answer.querySelector('.like-counter-answer');

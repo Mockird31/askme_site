@@ -17,11 +17,11 @@
 
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
 
-          <form class="d-flex flex-grow-1 ms-5" role="search">
-            <div class="input-group">
-              <input class="form-control" type="search" placeholder="Search" aria-label="Search" />
-              <button class="btn btn-outline-secondary" type="submit"><i class="fas fa-search"></i></button>
-            </div>
+          <form class="d-flex flex-grow-1 ms-5" role="search" action="{% url 'search' %}" method="GET">
+              <div class="input-group">
+                <input name="q" class="form-control" type="search" placeholder="Search" aria-label="Search" />
+                <button class="btn btn-outline-secondary" type="submit"><i class="fas fa-search"></i></button>
+              </div>
             <a href="{% url "ask" %}" class="btn btn-outline-success ms-5 me-5 w-50" role="button">Ask question</a>
           </form>
 
@@ -68,9 +68,9 @@
             <h2>Best members</h2>
             <div>
               <ul class="list-group list-group-flush">
-                {% for member in popular_members %}
+                {% for profile in best_profiles %}
                   <li class="list-group-item">
-                    {{ member.user.username }}
+                    {{ profile.user.username }}
                   </li>
                 {% endfor %}
               </ul>

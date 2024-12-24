@@ -1,11 +1,15 @@
 {% load static %}
 
-<div class="card w-100 ans" style="width: 18rem;" data-answer-id="{{ answer.id }}">
+<div class="card w-100 ans" style="width: 18rem;" data-answer-id="{{ answer.id }}" data-user-id="{{ answer.profile.user.id }}">
     <div class="card-body">
         <div class="row">
             <div class="col-3">
                 <div class="border mb-2" style="height: 100px">
-                    <img src="{% static "img/common_member.png" %}" alt="Avatar" class="img-fluid" style="height: 100px; margin-left: 53px; margin-right: 43px;">
+                    {% if answer.profile.image_path %}
+                        <img src="{{ answer.profile.image_path.url }}" alt="Avatar" class="img-fluid img-field" style="height: 100px; margin-left: 53px; margin-right: 43px;">
+                    {% else %}
+                        <img src="{% static "img/common_member.png" %}" alt="Avatar" class="img-fluid" style="height: 100px; margin-left: 53px; margin-right: 43px;">
+                    {% endif %}
                 </div>
                 <div class="d-flex gap-3 mt-3">
                     <button type="submit" class="btn btn-success d-flex align-items-center like-button-answer">
@@ -20,7 +24,7 @@
 
             </div>
             <div class="col-9">
-                <div><b>{{ answer.profile.user.username }} replied:</b> </div>
+                <div><b class = "answer-username">{{ answer.profile.user.username }} replied:</b> </div>
                 <p class="card-text"> {{ answer.text }} </p>
 
                 <div class="form-check mt-5">

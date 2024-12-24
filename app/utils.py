@@ -1,3 +1,4 @@
+from cent import Client, PublishRequest
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, render, redirect
 from app import models
@@ -6,7 +7,8 @@ from django.contrib import messages
 from app.forms import LoginForm, RegisterForm, QuestionForm, AnswerForm, SettingsForm
 from django.core.exceptions import ObjectDoesNotExist
 from django import forms
-
+from django.db.models import Count
+from askme_inyakin import settings
 
 def paginate(object_list, request, per_page=10):
     page_num = request.GET.get('page', 1)
@@ -32,7 +34,7 @@ def find_page_with_tag(QUESTIONS, tag_name):
         return tag_questions
 
 
-def my_authenticate(request, popular_tags, popular_members):
+def my_authenticate(request):
     form = LoginForm(request.POST)
     if not form.is_valid():
         return render(
@@ -40,8 +42,6 @@ def my_authenticate(request, popular_tags, popular_members):
             "login.html",
             {
                 'form': form,
-                'popular_tags': popular_tags,
-                'popular_members': popular_members
             }
         )
     
@@ -54,8 +54,6 @@ def my_authenticate(request, popular_tags, popular_members):
             "login.html",
             {
                 'form': form,
-                'popular_tags': popular_tags,
-                'popular_members': popular_members,
             }
         )
     else:
@@ -63,7 +61,7 @@ def my_authenticate(request, popular_tags, popular_members):
         return redirect("index")
 
 
-def create_profile(request, popular_tags, popular_members):
+def create_profile(request):
     form = RegisterForm(request.POST, request.FILES)
     if form.is_valid():
         profile = form.save()
@@ -74,13 +72,11 @@ def create_profile(request, popular_tags, popular_members):
             "signup.html",
             {
                 'form': form,
-                'popular_tags': popular_tags,
-                'popular_members': popular_members,
             }
         )
 
 
-def create_question(request, popular_tags, popular_members):
+def create_question(request):
     if (not models.Profile.objects.filter(user__username=request.user).exists()):
         messages.error(request, 'This profile does not exist')
         return render(
@@ -88,8 +84,6 @@ def create_question(request, popular_tags, popular_members):
             "ask.html",
             {
                 'form': QuestionForm(),
-                'popular_tags': popular_tags,
-                'popular_members': popular_members,
             }
         )
     profile = models.Profile.objects.get(user__username=request.user)
@@ -102,8 +96,6 @@ def create_question(request, popular_tags, popular_members):
         "ask.html",
         {
             'form': form,
-            'popular_tags': popular_tags,
-            'popular_members': popular_members,
         }
     )
 
@@ -112,7 +104,24 @@ def create_answer(request, question_id):
     question = models.Question.objects.get(id = question_id)
     form = AnswerForm(request.POST)
     if form.is_valid():
-        form.save(profile = profile, question = question)
+        answer = form.save(profile = profile, question = question)
+        answer.profile = profile
+        answer.question = question
+        answer = models.Answer.objects.annotate(
+            like_count=Count('answerlike'),
+            dislike_count=Count('answerdislike')
+        ).get(id=answer.id)
+
+        client = Client(settings.CENTRIFUGO_API_URL, settings.CENTRIFUGO_API_KEY)
+        request_cent = PublishRequest(channel=str(question.id), data={
+            "answer_id": answer.id,
+            "user_id": answer.profile.user.id,
+            "image_path": answer.profile.get_avatar_url(),
+            "username": answer.profile.user.username,
+            "text": answer.text,
+        })
+        print(profile.get_avatar_url())
+        result = client.publish(request_cent)
         return redirect('question', question_id = question_id)
     return render(
         request,
@@ -122,7 +131,7 @@ def create_answer(request, question_id):
         }
     )
 
-def change_settings(request, popular_tags, popular_members):
+def change_settings(request):
     profile = models.Profile.objects.get(user__username=request.user)
     form = SettingsForm(request.POST, request.FILES, instance=profile, user=request.user)
     if form.is_valid():
@@ -131,7 +140,7 @@ def change_settings(request, popular_tags, popular_members):
     return render(
         request,
         "settings.html",
-        {'popular_tags': popular_tags, 'popular_members': popular_members, 'form': form}
+        {'form': form}
     )
     
 def check_is_liked_question(question: models.Question, user: models.User):

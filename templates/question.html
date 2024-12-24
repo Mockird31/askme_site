@@ -9,12 +9,15 @@
 
 {% block content %}
 <div class="d-flex flex-column gap-3">
+    {% csrf_token %}
     {% include "card.html" %}
     <hr style="border: 1px solid #000; margin: 20px 0;">
 
-    {% for answer in answers %}
-        {% include "layouts/answer.html" %}
-    {% endfor %}
+    <div id="answer-container">
+        {% for answer in answers %}
+            {% include "layouts/answer.html" %}
+        {% endfor %}
+    </div>
 
     {% include "layouts/pagination.html" %}
 
@@ -23,6 +26,44 @@
     {% include "layouts/field_enter_answer.html" %}
     <script src="{% static 'js/pick_correct_answer.js' %}"></script>
     <script src="{% static 'js/answer_likes_dislikes.js' %}"></script>
+
+    <script src="https://unpkg.com/centrifuge@5.0.1/dist/centrifuge.js"></script>
+    <script src = "{% static 'js/real_time_answers.js' %}"></script>
+    <script type="text/javascript">
+        
+        const centrifuge = new Centrifuge("{{ ws_url }}", {
+            token: "{{ token }}"
+        });
+        
+        centrifuge.on('connecting', function (ctx) {
+            console.log(`connecting: ${ctx.code}, ${ctx.reason}`);
+        }).on('connected', function (ctx) {
+            console.log(`connected over ${ctx.transport}`);
+        }).on('disconnected', function (ctx) {
+            console.log(`disconnected: ${ctx.code}, ${ctx.reason}`);
+        }).connect();
+        
+        const sub = centrifuge.newSubscription("{{ question.id }}");
+        
+        sub.on('publication', function (ctx) {
+            const answerContainer = document.getElementById('answer-container');
+            const new_answer = createAnswerCard({
+                answer_id: ctx.data.answer_id,
+                user_id: ctx.data.user_id,
+                image_path: ctx.data.image_path,
+                username: ctx.data.username,
+                text: ctx.data.text,
+            });
+            answerContainer.prepend(new_answer);
+            console.log('New answer card added:', new_answer);
+        }).on('subscribing', function (ctx) {
+            console.log(`subscribing: ${ctx.code}, ${ctx.reason}`);
+        }).on('subscribed', function (ctx) {
+            console.log('subscribed', ctx);
+        }).on('unsubscribed', function (ctx) {
+            console.log(`unsubscribed: ${ctx.code}, ${ctx.reason}`);
+        }).subscribe();
+    </script>
 </div>
 {% endblock content %}
 

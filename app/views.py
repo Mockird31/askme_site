@@ -7,7 +7,10 @@ import app.utils
 from app import models
 from app.forms import LoginForm, RegisterForm, QuestionForm, AnswerForm, SettingsForm
 import copy
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_GET
+import functools
+import operator
+from django.db.models import Q
 
 QUESTIONS = [
     {
@@ -21,27 +24,40 @@ QUESTIONS = [
 ]
 
 # Create your views here.
+@require_GET
+def search(request):
+    query = request.GET.get('q')
+    if not query:
+        return redirect('index')
+    queries = query.split()
+    query_set = functools.reduce(operator.__or__, [Q(search_vector__icontains=query) for query in queries])
+    matched_questions = models.Question.objects.filter(query_set).distinct()
+    print(matched_questions)
+    page = app.utils.paginate(matched_questions, request, 5)
+
+    return render(
+        request,
+        'search_result.html',
+        context={'questions': page.object_list, 'page_obj': page}
+    )
+
 
 def index(request):
     questions = models.Question.objects.get_questions_with_counts()
     page = app.utils.paginate(questions, request, 5)
-    popular_tags = models.Tag.objects.get_popular_tags()
-    popular_members = models.Profile.objects.get_top_profiles()
     return render(
         request,
         'index.html',
-        context={'questions': page.object_list, 'page_obj': page, 'popular_tags': popular_tags, 'popular_members': popular_members}
+        context={'questions': page.object_list, 'page_obj': page}
     )
 
 def hot(request):
     questions = models.Question.objects.get_hot_questions()
     page = app.utils.paginate(questions, request, 5)
-    popular_members = models.Profile.objects.get_top_profiles()
-    popular_tags = models.Tag.objects.get_popular_tags()
     return render(
         request,
         'hot.html',
-        context={'questions': page.object_list, 'page_obj': page, 'popular_tags': popular_tags, 'popular_members': popular_members}
+        context={'questions': page.object_list, 'page_obj': page}
     )
 
 def question(request, question_id):
@@ -49,20 +65,15 @@ def question(request, question_id):
         return app.utils.create_answer(request, question_id)
     one_question, answers = models.Question.objects.get_question_with_answers(question_id)
     page = app.utils.paginate(answers, request, 5)
-    popular_tags = models.Tag.objects.get_popular_tags()
-    popular_members = models.Profile.objects.get_top_profiles()
     return render(
         request,
         'question.html',
-        {'question': one_question, 'answers': page.object_list, 'page_obj': page, 
-            'popular_tags': popular_tags, 'popular_members': popular_members, 'form': AnswerForm()}
+        {'question': one_question, 'answers': page.object_list, 'page_obj': page, 'form': AnswerForm()}
     )
 
 def tag_page(request, tag_name):
     manager = models.Question.objects
     tag_questions = app.utils.find_page_with_tag(manager.get_by_tag(tag_name.lower()), tag_name.lower())
-    popular_tags = models.Tag.objects.get_popular_tags()
-    popular_members = models.Profile.objects.get_top_profiles()
     if tag_questions == []:
         return render(
             request,
@@ -73,60 +84,50 @@ def tag_page(request, tag_name):
     return render(
         request,
         "tag.html",
-        {'questions': page.object_list, 'page_obj': page, 'tag_name': tag_name, 'popular_tags': popular_tags, 'popular_members': popular_members}
+        {'questions': page.object_list, 'page_obj': page, 'tag_name': tag_name}
     )
 
 @login_required
 def ask(request):
-    popular_tags = models.Tag.objects.get_popular_tags()
-    popular_members = models.Profile.objects.get_top_profiles()
-
     if request.method == "POST":
-        return app.utils.create_question(request, popular_tags, popular_members)
+        return app.utils.create_question(request)
 
     return render(
         request, 
         'ask.html',
-        {'popular_tags': popular_tags, 'popular_members': popular_members, 'form': QuestionForm()}
+        {'form': QuestionForm()}
     )
 
 def login(request):
-    popular_tags = models.Tag.objects.get_popular_tags()
-    popular_members = models.Profile.objects.get_top_profiles()
         
     if request.method == "POST":
-        return app.utils.my_authenticate(request, popular_tags, popular_members)
+        return app.utils.my_authenticate(request)
 
     return render(
         request,
         "login.html",
-        {'popular_tags': popular_tags, 'popular_members': popular_members, 'form' : LoginForm()}
+        {'form' : LoginForm()}
     )
 
 @login_required
 def settings(request):
-    popular_tags = models.Tag.objects.get_popular_tags()
-    popular_members = models.Profile.objects.get_top_profiles()
     profile = models.Profile.objects.get(user__username=request.user)
     form = SettingsForm(instance=profile, user=request.user)
     if request.method == "POST":
-        return app.utils.change_settings(request, popular_tags, popular_members)
+        return app.utils.change_settings(request)
     return render(
         request,
         "settings.html",
-        {'popular_tags': popular_tags, 'popular_members': popular_members, 'form': form}
+        {'form': form}
     )
 
 def signup(request):
-    popular_tags = models.Tag.objects.get_popular_tags()
-    popular_members = models.Profile.objects.get_top_profiles()
-
     if request.method == "POST":
-        return app.utils.create_profile(request, popular_tags, popular_members)
+        return app.utils.create_profile(request)
     return render(
         request,
         "signup.html",
-        {'popular_tags': popular_tags, 'popular_members': popular_members, 'form': RegisterForm()}
+        {'form': RegisterForm()}
     )
 
 def logout(request):
