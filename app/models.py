@@ -1,6 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.db.models import Count
+from django.db.models import Count, Sum
+from django.contrib.postgres.indexes import GinIndex
+from django.contrib.postgres.search import SearchVectorField
+
+from datetime import timedelta
+from django.utils.timezone import now
 
 # Create your models here.
 
@@ -52,10 +57,25 @@ class ProfileManager(models.Manager):
         return self.annotate(answer_count=Count('answer')).order_by('-answer_count')[:5]
     def get_profile_by_user(self, username):
         return self.get(user__username=username)  
+    def get_top_profiles_last_week(self):
+        one_week_ago = now() - timedelta(days=7)
+        return self.filter(
+            question__created_at__gte=one_week_ago  
+        ).annotate(
+            total_likes=Sum('question__likes__id')  
+        ).order_by('-total_likes')[:10]
 
 class TagManager(models.Manager):
     def get_popular_tags(self):
         return self.annotate(question_count=Count('question')).order_by('-question_count')[:5]
+    
+    def get_popular_tags_last_3_months(self):
+        three_months_ago = now() - timedelta(days=90)
+        return self.filter(
+            question__created_at__gte=three_months_ago  
+        ).annotate(
+            question_count=Count('question')  
+        ).order_by('-question_count')[:10] 
 
 class Tag(models.Model):
     tag_name = models.CharField(max_length=25, unique=True)
@@ -93,6 +113,11 @@ class Question(models.Model):
 
     objects = QuestionManager()
 
+    search_vector = SearchVectorField(null=True)
+    class Meta:
+        indexes = [
+            GinIndex(fields=['search_vector']),
+        ]
     def __str__(self):
         return self.title
 

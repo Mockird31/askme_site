@@ -1,0 +1,22 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block page_title %}
+<div class="d-flex gap-3 align-items-center">
+    <h1>Search results:</h1>
+    <a href="{% url "hot" %}">Hot questions</a>
+</div>
+{% endblock page_title %}
+
+{% block content %}
+<div class="d-flex flex-column gap-3">
+    {% csrf_token %} 
+    {% for question in questions %}
+        <!-- card-1 -->
+        {% include "card.html" %}
+    {% endfor %}
+
+    {% include "layouts/pagination.html" %}
+    
+</div>
+{% endblock content %}

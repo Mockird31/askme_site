@@ -20,6 +20,7 @@ urlpatterns = [
     path("<int:answer_id>/pick_correct_answer", views.pick_correct_answer, name='pick_correct_answer'),
     path("<int:answer_id>/like_answer_async", views.like_answer_async, name='like_answer_async'),
     path("<int:answer_id>/dislike_answer_async", views.dislike_answer_async, name='dislike_answer_async'),
+    path("search", views.search, name='search'),
 ]
 
 if settings.DEBUG:
