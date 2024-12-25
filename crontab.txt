@@ -1,0 +1,2 @@
+0 0 1 */3 * /Users/romainyakin/Desktop/codes/technopark/web/project1/project_env/bin/python3 /Users/romainyakin/Desktop/codes/technopark/web/project1/manage.py update_tags
+0 0 * * */7 /Users/romainyakin/Desktop/codes/technopark/web/project1/project_env/bin/python3 /Users/romainyakin/Desktop/codes/technopark/web/project1/manage.py update_profiles
