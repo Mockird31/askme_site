@@ -113,14 +113,14 @@ def create_answer(request, question_id):
         ).get(id=answer.id)
 
         client = Client(settings.CENTRIFUGO_API_URL, settings.CENTRIFUGO_API_KEY)
-        request_cent = PublishRequest(channel=str(question.id), data={
+        request_cent = PublishRequest(channel=str(question_id), data={
             "answer_id": answer.id,
             "user_id": answer.profile.user.id,
             "image_path": answer.profile.get_avatar_url(),
             "username": answer.profile.user.username,
             "text": answer.text,
         })
-        print(profile.get_avatar_url())
+        
         result = client.publish(request_cent)
         return redirect('question', question_id = question_id)
     return render(

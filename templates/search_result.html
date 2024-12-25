@@ -11,10 +11,13 @@
 {% block content %}
 <div class="d-flex flex-column gap-3">
     {% csrf_token %} 
-    {% for question in questions %}
-        <!-- card-1 -->
-        {% include "card.html" %}
-    {% endfor %}
+    {% if questions %}
+        {% for question in questions %}
+            {% include "card.html" %}
+        {% endfor %}
+    {% else %}
+        <h2>No questions found</h2>
+    {% endif %}
 
     {% include "layouts/pagination.html" %}
     

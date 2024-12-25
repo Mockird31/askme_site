@@ -208,3 +208,6 @@ Percentage of the requests served within a certain time (ms)
   98%    562
   99%    575
  100%    596 (longest request)
+
+
+Отдача динамического документа через проксирование запроса с nginx на gunicorn, при кэшировние ответа на nginx:

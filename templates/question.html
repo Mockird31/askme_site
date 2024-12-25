@@ -30,7 +30,6 @@
     <script src="https://unpkg.com/centrifuge@5.0.1/dist/centrifuge.js"></script>
     <script src = "{% static 'js/real_time_answers.js' %}"></script>
     <script type="text/javascript">
-        
         const centrifuge = new Centrifuge("{{ ws_url }}", {
             token: "{{ token }}"
         });
@@ -55,7 +54,6 @@
                 text: ctx.data.text,
             });
             answerContainer.prepend(new_answer);
-            console.log('New answer card added:', new_answer);
         }).on('subscribing', function (ctx) {
             console.log(`subscribing: ${ctx.code}, ${ctx.reason}`);
         }).on('subscribed', function (ctx) {
