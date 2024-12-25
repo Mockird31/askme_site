@@ -98,7 +98,7 @@ class Profile(models.Model):
     def get_avatar_url(self):
         if self.image_path:
             return self.image_path.url
-        return '/img/common_member.png'
+        return 'static/img/common_member.png'
 
     def __str__(self):
         return self.user.username

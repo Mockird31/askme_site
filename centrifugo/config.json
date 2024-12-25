@@ -5,9 +5,7 @@
     "admin_secret": "secret",
     "admin": true,
     "allowed_origins": [
-        "http://127.0.0.1:8081/"
+        "*"
     ],
-    "api": true,
-    "allow_subscribe_for_client": true,
-    "publish": true
+    "allow_subscribe_for_client": true
 }

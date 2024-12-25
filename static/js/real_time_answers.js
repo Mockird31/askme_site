@@ -5,9 +5,8 @@ function createAnswerCard(data) {
                 <div class="row">
                     <div class="col-3">
                         <div class="border mb-2" style="height: 100px">
-                            ${data.image_path
-            ? `<img src="${data.image_path}" alt="Avatar" class="img-fluid img-field" style="height: 100px; margin-left: 53px; margin-right: 43px;">`
-            : `<img src="/static/img/common_member.png" alt="Avatar" class="img-fluid" style="height: 100px; margin-left: 53px; margin-right: 43px;">`}
+                          <img src="${data.image_path}" alt="Avatar" class="img-fluid"
+                            style="height: 100px; margin-left: 53px; margin-right: 43px;">
                         </div>
                         <div class="d-flex gap-3 mt-3">
                             <button type="submit" class="btn btn-success d-flex align-items-center like-button-answer">

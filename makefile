@@ -63,3 +63,4 @@ clean:
 get_info:
 	$(BREW) services info $(NGINX)
 	$(BREW) services info $(MEMCACHED)
+	$(DOCKER) ps
